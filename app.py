@@ -1,8 +1,14 @@
 from flask import Flask, render_template, request
 from flask_sqlalchemy import SQLAlchemy
-from decouple import config
+from send_mail import send_mail
+import os
+from os.path import join, dirname
+from dotenv import load_dotenv
 
-POSTGRSQLPW = config("POSTGRSQLPW")
+dotenv_path = join(dirname(__file__), ".env")
+load_dotenv(dotenv_path)
+
+POSTGRSQLPW = os.environ.get("POSTGRSQLPW")
 
 app = Flask(__name__)
 
@@ -61,6 +67,7 @@ def submit():
             data = Feedback(customer, dealer, rating, comments)
             db.session.add(data)
             db.session.commit()
+            send_mail(customer, dealer, rating, comments)
             return render_template("success.html")
         return render_template(
             "index.html", message="You have already submitted feedback"
